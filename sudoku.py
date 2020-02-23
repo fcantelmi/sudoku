@@ -1,61 +1,71 @@
+import os
 import re
 
 
-def print_puzzle(grid):
-    for row_index in range(9):
-        print(get_row(grid, row_index))
-    print()
+class Sudoku:
 
+    @classmethod
+    def parse(cls, sudoku):
+        no_whitespace = re.sub(r"\s+", "", sudoku.strip())
+        values = [int(val) if val in '123456789' else 0 for val in no_whitespace]
+        return cls(values)
 
-def set_val(grid, row, col, value):
-    grid[row * 9 + col] = int(value)
+    def __init__(self, values):
+        self.values = values
 
+    def set_val(self, row, col, value):
+        self.values[row * 9 + col] = value
 
-def get_val(grid, row, col):
-    return grid[row * 9 + col]
+    def get_val(self, row, col):
+        return self.values[row * 9 + col]
 
+    def get_box(self, row, col):
+        box_row = (row // 3) * 3  # returns 0, 3, or 6
+        box_col = (col // 3) * 3  # returns 0, 3, or 6
 
-def get_box(grid, row, col):
-    box_row = (row // 3) * 3  # returns 0, 3, or 6
-    box_col = (col // 3) * 3  # returns 0, 3, or 6
+        return [self.get_val(box_row + it_row, box_col + it_col) for it_row in range(3) for it_col in range(3)]
 
-    return [get_val(grid, box_row + it_row, box_col + it_col) for it_row in range(3) for it_col in range(3)]
+    def get_row(self, row):
+        index = 9 * row
+        return self.values[index:index + 9]
 
+    def get_col(self, col):
+        return self.values[col::9]
 
-def get_row(grid, row):
-    index = 9 * row
-    return grid[index:index + 9]
+    def possible(self, row, col, value):
+        if value in self.get_row(row):
+            return False
 
+        if value in self.get_col(col):
+            return False
 
-def get_col(grid, col):
-    return grid[col::9]
+        if value in self.get_box(row, col):
+            return False
 
+        return True
 
-def possible(grid, row, col, value):
-    if value in get_row(grid, row):
-        return False
+    def solve(self):
+        for row in range(9):
+            for col in range(9):
+                if self.get_val(row, col) == 0:
+                    for value in range(1, 10):
+                        if self.possible(row, col, value):
+                            self.set_val(row, col, value)
+                            if self.solve() is False:
+                                self.set_val(row, col, 0)
+                    return False
 
-    if value in get_col(grid, col):
-        return False
+        print(self)
+        return True
 
-    if value in get_box(grid, row, col):
-        return False
+    def __str__(self):
+        sudoku = ""
 
-    return True
+        for row_index in range(9):
+            sudoku += " ".join([str(it) for it in self.get_row(row_index)])
+            sudoku += os.linesep
 
-
-def solve(grid):
-    for row in range(9):
-        for col in range(9):
-            if get_val(grid, row, col) == 0:
-                for value in range(1, 10):
-                    if possible(grid, row, col, value):
-                        set_val(grid, row, col, value)
-                        if solve(grid) is False:
-                            set_val(grid, row, col, 0)
-                return False
-    print_puzzle(grid)
-    return True
+        return sudoku
 
 
 unsolved = '.......15.49......2..3.17..8..2...9..9.....7..7...6..1..49.5..7......54.61.......'
@@ -83,21 +93,5 @@ android = """
             .  .  .  .  .  .  4  .  .
             """
 
-no_whitespace = re.sub(r"\s+", "", android.strip())
-grid = [int(val) if val in '123456789' else 0 for val in no_whitespace]
-
-solve(grid)
-# print(get_box(grid, 8, 8))
-
-# for row_index in range(9):
-#     print(get_row(grid, row_index))
-# #
-# print()
-#
-# for col_index in range(9):
-#     print(get_col(grid, col_index))
-#
-# print(get_val(grid, 0, 0))
-# print(get_val(grid, 2, 7))
-# print(get_val(grid, 7, 2))
-# print(get_val(grid, 8, 8))
+puzzle = Sudoku.parse(unsolved)
+puzzle.solve()
