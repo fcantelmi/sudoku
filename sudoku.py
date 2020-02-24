@@ -7,17 +7,26 @@ class Sudoku:
     def __init__(self, values):
         self.values = values
 
-    def set_val(self, row, col, value):
+    def __str__(self):
+        sudoku = ""
+
+        for row_index in range(9):
+            sudoku += " ".join(["." if it is None else str(it) for it in self.get_row(row_index)])
+            sudoku += os.linesep
+
+        return sudoku
+
+    def set_value(self, row, col, value):
         self.values[row * 9 + col] = value
 
-    def get_val(self, row, col):
+    def get_value(self, row, col):
         return self.values[row * 9 + col]
 
     def get_box(self, row, col):
         box_row = (row // 3) * 3  # returns 0, 3, or 6
         box_col = (col // 3) * 3  # returns 0, 3, or 6
 
-        return [self.get_val(box_row + it_row, box_col + it_col) for it_row in range(3) for it_col in range(3)]
+        return [self.get_value(box_row + it_row, box_col + it_col) for it_row in range(3) for it_col in range(3)]
 
     def get_row(self, row):
         index = 9 * row
@@ -41,30 +50,21 @@ class Sudoku:
     def solve(self):
         for row in range(9):
             for col in range(9):
-                if self.get_val(row, col) == 0:
+                if self.get_value(row, col) is None:
                     for value in range(1, 10):
                         if self.possible(row, col, value):
-                            self.set_val(row, col, value)
+                            self.set_value(row, col, value)
                             if self.solve() is False:
-                                self.set_val(row, col, 0)
+                                self.set_value(row, col, None)
                     return False
 
         print(self)
         return True
 
-    def __str__(self):
-        sudoku = ""
-
-        for row_index in range(9):
-            sudoku += " ".join([str(it) for it in self.get_row(row_index)])
-            sudoku += os.linesep
-
-        return sudoku
-
     @classmethod
     def parse(cls, sudoku):
         no_whitespace = re.sub(r"\s+", "", sudoku)
-        values = [int(val) if val in '123456789' else 0 for val in no_whitespace]
+        values = [int(val) if val in '123456789' else None for val in no_whitespace]
         return cls(values)
 
 
@@ -94,4 +94,5 @@ android = """
             """
 
 puzzle = Sudoku.parse(unsolved)
+print(puzzle)
 puzzle.solve()
