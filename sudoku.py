@@ -11,7 +11,8 @@ class Sudoku:
         sudoku = ""
 
         for row_index in range(9):
-            sudoku += " ".join(["." if it is None else str(it) for it in self.get_row(row_index)])
+            split = ["." if it is None else str(it) for it in self.get_row(row_index)]
+            sudoku += " ".join(split)
             sudoku += os.linesep
 
         return sudoku
