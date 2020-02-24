@@ -4,12 +4,6 @@ import re
 
 class Sudoku:
 
-    @classmethod
-    def parse(cls, sudoku):
-        no_whitespace = re.sub(r"\s+", "", sudoku.strip())
-        values = [int(val) if val in '123456789' else 0 for val in no_whitespace]
-        return cls(values)
-
     def __init__(self, values):
         self.values = values
 
@@ -66,6 +60,12 @@ class Sudoku:
             sudoku += os.linesep
 
         return sudoku
+
+    @classmethod
+    def parse(cls, sudoku):
+        no_whitespace = re.sub(r"\s+", "", sudoku)
+        values = [int(val) if val in '123456789' else 0 for val in no_whitespace]
+        return cls(values)
 
 
 unsolved = '.......15.49......2..3.17..8..2...9..9.....7..7...6..1..49.5..7......54.61.......'
