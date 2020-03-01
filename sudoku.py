@@ -2,20 +2,21 @@ import os
 import re
 
 
-class Sudoku:
+class Puzzle:
 
     def __init__(self, values):
         self.values = values
 
     def __str__(self):
-        sudoku = ""
+        p = ""
 
-        for row_index in range(9):
-            split = ["." if it is None else str(it) for it in self.get_row(row_index)]
-            sudoku += " ".join(split)
-            sudoku += os.linesep
+        for row in range(9):
+            row_index = 9 * row
+            split = ["." if it is None else str(it) for it in self.values[row_index:row_index + 9]]
+            p += " ".join(split)
+            p += os.linesep
 
-        return sudoku
+        return p
 
     def set_value(self, row, col, value):
         self.values[row * 9 + col] = value
@@ -23,27 +24,30 @@ class Sudoku:
     def get_value(self, row, col):
         return self.values[row * 9 + col]
 
-    def get_box(self, row, col):
+    def box_values(self, row, col):
         box_row = (row // 3) * 3  # returns 0, 3, or 6
         box_col = (col // 3) * 3  # returns 0, 3, or 6
 
-        return [self.get_value(box_row + it_row, box_col + it_col) for it_row in range(3) for it_col in range(3)]
+        values = set([self.get_value(box_row + it_row, box_col + it_col) for it_row in range(3) for it_col in range(3)])
+        return frozenset(values)
 
-    def get_row(self, row):
+    def row_values(self, row):
         index = 9 * row
-        return self.values[index:index + 9]
+        values = set(self.values[index:index + 9])
+        return frozenset(values)
 
-    def get_col(self, col):
-        return self.values[col::9]
+    def col_values(self, col):
+        values = set(self.values[col::9])
+        return frozenset(values)
 
     def possible(self, row, col, value):
-        if value in self.get_row(row):
+        if value in self.row_values(row):
             return False
 
-        if value in self.get_col(col):
+        if value in self.col_values(col):
             return False
 
-        if value in self.get_box(row, col):
+        if value in self.box_values(row, col):
             return False
 
         return True
@@ -63,15 +67,16 @@ class Sudoku:
         return True
 
     @classmethod
-    def parse(cls, sudoku):
-        no_whitespace = re.sub(r"\s+", "", sudoku)
+    def parse(cls, p):
+        no_whitespace = re.sub(r"\s+", "", p)
         values = [int(val) if val in '123456789' else None for val in no_whitespace]
         return cls(values)
 
 
-unsolved = '.......15.49......2..3.17..8..2...9..9.....7..7...6..1..49.5..7......54.61.......'
-# expected = '738629415149578632256341789861257394592413876473896251324985167987162543615734928'
-expected = """
+if __name__ == '__main__':
+    unsolved = '.......15.49......2..3.17..8..2...9..9.....7..7...6..1..49.5..7......54.61.......'
+    # expected = '738629415149578632256341789861257394592413876473896251324985167987162543615734928'
+    expected = """
     9  2  1  6  5  8  7  4  3
     8  3  4  7  1  2  5  6  9
     6  5  7  4  9  3  1  2  8
@@ -81,8 +86,8 @@ expected = """
     3  8  2  1  6  4  9  5  7
     5  1  6  9  8  7  2  3  4
     7  4  9  3  2  5  6  8  1
-"""
-android = """
+    """
+    android = """
             .  .  .  .  1  3  .  .  .
             .  .  .  6  8  .  .  .  2
             .  .  6  .  .  .  .  .  .
@@ -94,6 +99,6 @@ android = """
             .  .  .  .  .  .  4  .  .
             """
 
-puzzle = Sudoku.parse(unsolved)
-print(puzzle)
-puzzle.solve()
+    puzzle = Puzzle.parse(unsolved)
+    print(puzzle)
+    puzzle.solve()
