@@ -2,6 +2,39 @@ import os
 import re
 
 
+class BacktrackingSolver:
+
+    def __init__(self, puzzle):
+        self.puzzle = puzzle
+        self.solved_puzzle = None
+
+    def possible(self, row, col, value):
+        if value in self.puzzle.row_values(row):
+            return False
+
+        if value in self.puzzle.col_values(col):
+            return False
+
+        if value in self.puzzle.box_values(row, col):
+            return False
+
+        return True
+
+    def solve(self):
+        for row in range(9):
+            for col in range(9):
+                if self.puzzle.get_value(row, col) is None:
+                    for value in range(1, 10):
+                        if self.possible(row, col, value):
+                            self.puzzle.set_value(row, col, value)
+                            if self.solve() is False:
+                                self.puzzle.set_value(row, col, None)
+                    return False
+        self.solved_puzzle = self.puzzle
+        print(self.solved_puzzle)
+        return True
+
+
 class Puzzle:
 
     def __init__(self, values):
@@ -28,43 +61,17 @@ class Puzzle:
         box_row = (row // 3) * 3  # returns 0, 3, or 6
         box_col = (col // 3) * 3  # returns 0, 3, or 6
 
-        values = set([self.get_value(box_row + it_row, box_col + it_col) for it_row in range(3) for it_col in range(3)])
+        values = [self.get_value(box_row + it_row, box_col + it_col) for it_row in range(3) for it_col in range(3)]
         return frozenset(values)
 
     def row_values(self, row):
         index = 9 * row
-        values = set(self.values[index:index + 9])
+        values = self.values[index:index + 9]
         return frozenset(values)
 
     def col_values(self, col):
-        values = set(self.values[col::9])
+        values = self.values[col::9]
         return frozenset(values)
-
-    def possible(self, row, col, value):
-        if value in self.row_values(row):
-            return False
-
-        if value in self.col_values(col):
-            return False
-
-        if value in self.box_values(row, col):
-            return False
-
-        return True
-
-    def solve(self):
-        for row in range(9):
-            for col in range(9):
-                if self.get_value(row, col) is None:
-                    for value in range(1, 10):
-                        if self.possible(row, col, value):
-                            self.set_value(row, col, value)
-                            if self.solve() is False:
-                                self.set_value(row, col, None)
-                    return False
-
-        print(self)
-        return True
 
     @classmethod
     def parse(cls, p):
@@ -99,6 +106,7 @@ if __name__ == '__main__':
             .  .  .  .  .  .  4  .  .
             """
 
-    puzzle = Puzzle.parse(unsolved)
+    puzzle = Puzzle.parse(android)
     print(puzzle)
-    puzzle.solve()
+    solver = BacktrackingSolver(puzzle)
+    solver.solve()
