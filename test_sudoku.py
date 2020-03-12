@@ -50,6 +50,10 @@ class TestSudoku(unittest.TestCase):
                 box_values = self.solved_puzzle.box_values(row, col)
                 self.assertEqual(self.all_values, box_values)
 
+    def test_puzzle_possible_values_solved(self):
+        values = self.solved_puzzle.possible_values(row=0, col=0)
+        self.assertFalse(values)
+
     def test_puzzle_row_values_unsolved(self):
         values = self.unsolved_puzzle.row_values(row=0)
         self.assertEqual(frozenset({1, 5, None}), values)
@@ -61,6 +65,14 @@ class TestSudoku(unittest.TestCase):
         self.assertEqual(frozenset({2, 6, 8, None}), values)
         values = self.unsolved_puzzle.col_values(col=1)
         self.assertEqual(frozenset({1, 4, 7, 9, None}), values)
+
+    def test_puzzle_box_values_unsolved(self):
+        box_values = self.unsolved_puzzle.box_values(row=5, col=5)
+        self.assertEqual(frozenset({2, 6, None}), box_values)
+
+    def test_puzzle_possible_values_unsolved(self):
+        values = self.unsolved_puzzle.possible_values(row=0, col=0)
+        self.assertEqual(frozenset({3, 7}), values)
 
 
 if __name__ == '__main__':

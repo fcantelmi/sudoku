@@ -20,17 +20,19 @@ class BacktrackingSolver:
 
         return True
 
-    def solve(self):
+    def solve(self, depth=0):
+        depth += 1
         for row in range(9):
             for col in range(9):
                 if self.puzzle.get_value(row, col) is None:
                     for value in range(1, 10):
                         if self.possible(row, col, value):
                             self.puzzle.set_value(row, col, value)
-                            if self.solve() is False:
+                            if self.solve(depth) is False:
                                 self.puzzle.set_value(row, col, None)
                     return False
         self.solved_puzzle = self.puzzle
+        print("depth=", depth)
         print(self.solved_puzzle)
         return True
 
@@ -73,14 +75,23 @@ class Puzzle:
         values = self.values[col::9]
         return frozenset(values)
 
+    def possible_values(self, row, col):
+        values = set(range(1, 10)) \
+                 - self.row_values(row) \
+                 - self.col_values(col) \
+                 - self.box_values(row, col)
+
+        return values
+
     @classmethod
     def parse(cls, p):
         no_whitespace = re.sub(r"\s+", "", p)
         values = [int(val) if val in '123456789' else None for val in no_whitespace]
+
         return cls(values)
 
 
-if __name__ == '__main__':
+def test():
     unsolved = '.......15.49......2..3.17..8..2...9..9.....7..7...6..1..49.5..7......54.61.......'
     # expected = '738629415149578632256341789861257394592413876473896251324985167987162543615734928'
     expected = """
@@ -106,7 +117,11 @@ if __name__ == '__main__':
             .  .  .  .  .  .  4  .  .
             """
 
-    puzzle = Puzzle.parse(android)
+    puzzle = Puzzle.parse(unsolved)
     print(puzzle)
     solver = BacktrackingSolver(puzzle)
     solver.solve()
+
+
+if __name__ == '__main__':
+    test()
